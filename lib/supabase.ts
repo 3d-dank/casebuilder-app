@@ -1,13 +1,26 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || ''
+function getSupabaseUrl() {
+  return process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+}
 
-// Client-side Supabase client (uses anon key)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+function getAnonKey() {
+  return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+}
+
+function getServiceKey() {
+  return process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+}
+
+// Client-side Supabase client (lazy — not created at module evaluation time)
+export function createBrowserClient() {
+  return createClient(getSupabaseUrl(), getAnonKey())
+}
 
 // Server-side Supabase client (uses service role key — bypasses RLS)
 export function createServerClient() {
-  return createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey)
+  const url = getSupabaseUrl()
+  const key = getServiceKey()
+  if (!url) throw new Error('NEXT_PUBLIC_SUPABASE_URL is not set')
+  return createClient(url, key)
 }
