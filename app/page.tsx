@@ -70,7 +70,7 @@ export default function LoginPage() {
                   borderColor: error ? '#ef4444' : '#d1d9e0',
                   background: '#fff',
                   color: '#1a2332',
-                  focusRingColor: '#0D9488',
+
                 }}
                 required
                 autoComplete="current-password"
