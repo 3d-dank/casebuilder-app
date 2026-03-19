@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
+import ChatWidget from '@/components/ChatWidget'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: '🏠', exact: true },
@@ -101,6 +102,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {children}
       </main>
+
+      {/* Floating chat assistant */}
+      <ChatWidget />
     </div>
   )
 }
