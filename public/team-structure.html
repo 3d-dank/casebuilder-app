@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Dev Team White Paper — TopDog AI</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Georgia, serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #fff; max-width: 860px; margin: 0 auto; padding: 48px 40px; }
+  h1 { font-size: 2.2em; color: #1E3A5F; margin-bottom: 8px; margin-top: 48px; border-bottom: 3px solid #0D9488; padding-bottom: 12px; }
+  h2 { font-size: 1.5em; color: #1E3A5F; margin-top: 40px; margin-bottom: 12px; border-left: 4px solid #0D9488; padding-left: 12px; }
+  h3 { font-size: 1.2em; color: #0D9488; margin-top: 28px; margin-bottom: 8px; }
+  h4 { font-size: 1em; color: #1E3A5F; margin-top: 20px; margin-bottom: 6px; font-weight: 700; }
+  p { margin-bottom: 16px; }
+  ul { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.9em; }
+  td, th { border: 1px solid #ddd; padding: 10px 14px; text-align: left; }
+  tr:first-child td { background: #1E3A5F; color: white; font-weight: 600; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; font-family: monospace; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 32px 0; }
+  strong { color: #1E3A5F; }
+  .cover { text-align: center; padding: 60px 0 40px; border-bottom: 2px solid #0D9488; margin-bottom: 40px; }
+  .cover h1 { border: none; font-size: 2.6em; }
+  .cover .subtitle { color: #0D9488; font-size: 1.1em; margin-top: 8px; }
+  .cover .meta { margin-top: 24px; color: #666; font-size: 0.95em; }
+  @media print { body { padding: 20px; } }
+</style>
+</head>
+<body>
+<h1>AI-Orchestrated Software Development Team Structure</h1>
+<h2>A White Paper for TopDog AI</h2>
+<p><strong>Prepared for:</strong> Jeff Dankey, TopDog AI   <strong>Date:</strong> March 2026   <strong>Classification:</strong> Internal Strategy Document</p>
+<hr>
+<h2>Executive Summary</h2>
+<p>TopDog AI is building multiple SaaS products — iOS apps, web apps, and portals — with AI as the primary development operator. Today's workflow suffers from predictable failure modes: session timeouts that lose mid-task context, build errors that only surface at deployment, incomplete feature work handed off prematurely, and Jeff functioning as a manual deployment bottleneck.</p>
+<p>This white paper proposes a three-tier AI-orchestrated development team modeled on proven multi-agent architectures from the industry (CrewAI, Microsoft AutoGen, LangGraph). The design puts a central Orchestrator AI at the top, commanding specialized sub-agents — Architect, Frontend, Backend, QA, DevOps, and Research — with support from Memory and Docs agents below. Jeff's role shifts from operator to strategic director: he inputs requirements and reviews finished, tested, deployment-ready outputs.</p>
+<p>The result: faster shipping, dramatically fewer regressions, zero manually-caught build errors before deploy, and a system that compounds in capability over time.</p>
+<hr>
+<h2>1. The Problem We're Solving</h2>
+<h3>1.1 Today's Pain Points</h3>
+<p>Building software with AI today is powerful but brittle. The current workflow at TopDog AI exhibits four critical failure modes:</p>
+<p><strong>Timeout Fragmentation.</strong> Long coding tasks exceed session limits before completion. Context is lost. The next session starts cold, unaware of prior decisions, partially written files, or architectural choices made twenty minutes ago. The result is incoherent, sometimes contradictory code scattered across incomplete sessions.</p>
+<p><strong>Pre-Deploy Blind Spots.</strong> Build errors, TypeScript type mismatches, missing environment variables, and broken imports go undetected until deployment. By the time Vercel or EAS surfaces the error, the context window has moved on. Fixing the error requires reconstructing what was being built, often from scratch.</p>
+<p><strong>Incomplete Handoffs.</strong> Tasks that span multiple concerns — "build the auth system" touches database schema, API routes, frontend components, and environment config — frequently finish only the parts the AI is currently focused on. The remaining pieces exist as implicit assumptions nobody checks.</p>
+<p><strong>Jeff as Bottleneck.</strong> Currently, Jeff must approve and execute deployments, review code quality, catch errors, coordinate between tasks, and maintain project context between sessions. This is both inefficient and unsustainable as the product portfolio grows.</p>
+<h3>1.2 The Opportunity</h3>
+<p>The solution isn't a better single AI — it's a better system of AIs. The same way a software company doesn't hire one brilliant generalist to design, code, test, document, and deploy everything, an AI development shop shouldn't rely on a single AI context window to do it all. The answer is specialization, orchestration, and explicit handoff protocols enforced by the system — not by Jeff.</p>
+<hr>
+<h2>2. Industry Research: What's Actually Working</h2>
+<h3>2.1 The Multi-Agent Framework Landscape</h3>
+<p>Three frameworks have emerged as the leading approaches to multi-agent software development in 2025:</p>
+<p><strong>CrewAI</strong> (crewai.com) is the most widely deployed open-source multi-agent framework, with over 100,000 certified developers. Its architecture separates <em>Flows</em> (the orchestration backbone — stateful, event-driven, controlling what happens and when) from <em>Crews</em> (specialized agent teams that tackle complex subtasks). The key insight: the orchestrator manages state and routes work; the specialist crews do the domain-specific heavy lifting. Crucially, Flows persist state across steps, solving the context fragmentation problem directly.</p>
+<p><strong>Microsoft AutoGen</strong> is an event-driven multi-agent framework built around conversational agent patterns. AutoGen's strength is in <em>distributed agent runtimes</em> — agents that can run in separate processes, containers, or machines, communicating via message-passing. This is especially relevant for TopDog AI's planned Mac mini SSH infrastructure, where agents can run as persistent processes rather than ephemeral session-scoped contexts.</p>
+<p><strong>LangGraph</strong> (by LangChain) models multi-agent systems as directed graphs where each node is an agent and edges represent control flow. LangGraph pioneered the <em>Agent Supervisor</em> pattern — a central supervisor agent whose "tools" are other specialized agents. This maps cleanly to the orchestrator model proposed here. LangGraph also supports <em>Hierarchical Agent Teams</em>, where sub-supervisors manage their own crews, enabling scaling depth without losing control.</p>
+<h3>2.2 Patterns That Work</h3>
+<p>Research across these frameworks reveals consistent patterns in successful multi-agent dev teams:</p>
+<p><strong>Role specialization beats generalism.</strong> An agent focused on a single domain (e.g., only writing React components) consistently outperforms a generalist asked to do everything. Focused prompts, focused context, focused tools.</p>
+<p><strong>Structured handoffs prevent context loss.</strong> Successful teams use explicit handoff artifacts — structured JSON or markdown "handoff documents" — rather than relying on implicit shared context. Every specialist agent receives exactly the context it needs, no more.</p>
+<p><strong>QA gates block bad work at the boundary.</strong> The most reliable pattern: no output exits the agent pipeline without passing a QA gate. In software, this means the QA agent runs tests, lints, type-checks, and verifies environment config before marking work as complete. If it fails, it routes back to the responsible agent — not to the human.</p>
+<p><strong>Memory agents solve the timeout problem.</strong> Persistent memory agents that write project state to durable storage (files, databases) allow agent sessions to be stateless and recoverable. A new session can cold-start from the memory agent's last checkpoint without losing architectural context.</p>
+<p><strong>Human escalation should be exceptional.</strong> In teams like Cognition AI's Devin and GitHub Copilot Workspace, the agent only surfaces work to a human when it hits genuine ambiguity it cannot resolve. Everything else — including handling failed tests and fixing its own build errors — is handled autonomously.</p>
+<h3>2.3 Common Failure Modes (and How to Avoid Them)</h3>
+<table>
+<tr><td>Failure Mode</td><td>Root Cause</td><td>Fix</td></tr>
+<tr><td>Hallucination loops</td><td>Agent invents facts about the codebase</td><td>Ground agents in file reads, not memory</td></tr>
+<tr><td>Infinite retry loops</td><td>No exit condition on self-correction</td><td>Max retry counts + escalation path</td></tr>
+<tr><td>Lost context at handoff</td><td>Implicit assumptions, no artifact</td><td>Mandatory structured handoff documents</td></tr>
+<tr><td>Scope creep</td><td>Agent re-interprets the task</td><td>Orchestrator locks scope before delegating</td></tr>
+<tr><td>Untested code ships</td><td>No automated gate before deploy</td><td>QA agent is a hard blocker, not optional</td></tr>
+<tr><td>Stale project context</td><td>Memory only in session context</td><td>Persistent memory files, updated after each task</td></tr>
+</table>
+<hr>
+<h2>3. Recommended Team Structure for TopDog AI</h2>
+<p>The following architecture is a three-tier hierarchy. Jeff sits above the entire system as strategic director. The Orchestrator AI sits at the apex of execution. Specialist agents execute. Support agents maintain continuity.</p>
+<p>``<code> ┌─────────────────────────────────────────────────┐ │                    JEFF DANKEY                   │ │              Strategic Director                  │ │    (Requirements In → Approved Outputs Out)      │ └─────────────────────┬───────────────────────────┘                       │ ┌─────────────────────▼───────────────────────────┐ │              TIER 1: ORCHESTRATOR                │ │                  (OpenClaw)                      │ │  • Receives & clarifies requirements             │ │  • Decomposes into tasks                         │ │  • Routes to specialists                         │ │  • Validates outputs                             │ │  • Only escalates genuine blockers to Jeff       │ └──┬───────┬──────┬──────┬──────┬─────────────────┘    │       │      │      │      │ ┌──▼──┐ ┌──▼──┐ ┌─▼──┐ ┌▼────┐ ┌▼─────┐ ┌────────┐ │ AR  │ │ FE  │ │ BE │ │ QA  │ │ DEV  │ │  RE    │ │CHIT │ │FRON │ │BACK│ │AGENT│ │ OPS  │ │SEARCH  │ │ECT  │ │END  │ │END │ │     │ │AGENT │ │ AGENT  │ └──┬──┘ └──┬──┘ └─┬──┘ └┬────┘ └┬─────┘ └────────┘    │       │      │     │      │ ┌──▼───────▼──────▼─────▼──────▼─────────────────┐ │              TIER 3: SUPPORT                     │ │        MEMORY AGENT │ DOCS AGENT                │ └─────────────────────────────────────────────────┘ </code>`<code></p>
+<h3>3.1 Tier 1 — The Orchestrator</h3>
+<p><strong>Identity:</strong> This is OpenClaw in its primary session role — the central intelligence Jeff talks to directly.</p>
+<p><strong>Responsibilities:</strong> <ul><li>Accept requirements from Jeff in natural language</li> <li>Clarify ambiguities <em>before</em> delegating (ask once, not mid-task)</li> <li>Decompose requirements into a concrete task graph with dependencies</li> <li>Assign tasks to the appropriate specialist sub-agents with structured briefs</li> <li>Collect outputs, validate coherence, identify gaps</li> <li>Only escalate to Jeff when hitting genuine architectural decisions, business logic unknowns, or external blockers</li> </ul> <strong>What the Orchestrator does NOT do:</strong> <ul><li>Write feature code (delegates to Frontend/Backend agents)</li> <li>Run tests (delegates to QA)</li> <li>Execute deployments (delegates to DevOps)</li> </ul> <strong>Key behavior:</strong> The Orchestrator treats Jeff's time as the most expensive resource in the system. It filters, coordinates, and approves before anything reaches Jeff's eyes.</p>
+<p><strong>Prompt anchor:</strong> > "You are the lead engineering manager for TopDog AI. Your job is to receive requirements from Jeff, decompose them into executable tasks, delegate to specialist agents, and return only finished, tested, deployment-ready work. You do not write production code — you direct those who do. You escalate to Jeff only when you hit a genuine blocker you cannot resolve."</p>
+<hr>
+<h3>3.2 Tier 2 — Specialist Agents</h3>
+<h4>🏗 Architect Agent</h4>
+<strong>Domain:</strong> System design, data modeling, tech stack decisions, API contracts  
+<strong>Inputs:</strong> Feature requirement brief from Orchestrator  
+<strong>Outputs:</strong> Architecture decision record (ADR), schema definitions, API contract spec, component dependency map  
+<strong>Tools:</strong> File read/write, diagram generation, schema validation  
+<strong>Key rule:</strong> The Architect's output is the source of truth for all other agents on that feature. Nothing gets built until the Architect has signed off on the shape.
+<p><strong>Prompt anchor:</strong> > "You are a senior software architect specializing in TypeScript, Next.js, React Native, Supabase, and Vercel. Given a feature requirement, produce an architecture decision record including: data schema, API routes, component structure, and key technical constraints. Be opinionated and specific. Other agents will build to your spec."</p>
+<hr>
+<h4>🎨 Frontend Agent</h4>
+<strong>Domain:</strong> React, Next.js, React Native / Expo, Tailwind CSS, UI components  
+<strong>Inputs:</strong> Architect's component spec, design references, API contracts  
+<strong>Outputs:</strong> Complete, typed, linted component files  
+<strong>Tools:</strong> File write, TypeScript compiler check, component storybook  
+<strong>Key rule:</strong> Never ships a component without verifying the API contract it depends on exists.
+<p><strong>Prompt anchor:</strong> > "You are a senior frontend engineer specializing in React, Next.js App Router, React Native with Expo, and Tailwind CSS. Build UI components to spec. Every component must be fully typed with TypeScript, handle loading and error states, and match the API contract provided. Do not invent endpoints that don't exist in the spec."</p>
+<hr>
+<h4>⚙️ Backend Agent</h4>
+<strong>Domain:</strong> API routes, database queries, Supabase RLS, business logic, webhooks  
+<strong>Inputs:</strong> Architect's API contract and schema  
+<strong>Outputs:</strong> API route handlers, database migrations, business logic functions  
+<strong>Tools:</strong> File write, Supabase CLI, TypeScript compiler check  
+<strong>Key rule:</strong> All database mutations go through RLS-aware functions. No raw queries without a security review comment.
+<p><strong>Prompt anchor:</strong> > "You are a senior backend engineer specializing in Next.js API routes, Supabase (PostgreSQL + RLS), and TypeScript. Implement the API contract exactly as specified by the Architect. All routes must handle auth validation, error responses, and edge cases. Write migrations for any schema changes."</p>
+<hr>
+<h4>🧪 QA Agent</h4>
+<strong>Domain:</strong> Testing, pre-deploy validation, build verification, regression detection  
+<strong>Inputs:</strong> All code produced by Frontend and Backend agents  
+<strong>Outputs:</strong> QA report (PASS/FAIL), list of issues with file/line references, updated test files  
+<strong>Tools:</strong> TypeScript compiler, ESLint, test runner (Vitest/Jest), build command, API contract validator  
+<strong>Key rule:</strong> QA is a <strong>hard gate</strong>. The Orchestrator cannot mark a task complete until QA returns PASS. No exceptions.
+<p><strong>QA Checklist (automated):</strong> <ul><li>[ ] TypeScript compiles with zero errors (</code>tsc --noEmit<code>)</li> <li>[ ] ESLint passes with zero errors</li> <li>[ ] All referenced environment variables exist in </code>.env.example<code></li> <li>[ ] API routes match the Architect's contract (method, path, request/response shape)</li> <li>[ ] Unit tests pass for business logic functions</li> <li>[ ] No </code>console.log<code> left in production paths</li> <li>[ ] No hardcoded API keys or secrets</li> <li>[ ] Mobile builds: EAS build compiles without error</li> <li>[ ] Web builds: </code>next build<code> exits 0</li> </ul> <strong>Prompt anchor:</strong> > "You are a QA engineer and security reviewer. Given a set of code changes, run the full pre-deploy checklist. Return a structured PASS or FAIL report with specific file and line references for every failure. You are a hard gate — failing any item means the task is NOT complete. Route failures back to the responsible agent with clear instructions."</p>
+<hr>
+<h4>🚀 DevOps Agent</h4>
+<strong>Domain:</strong> Git operations, Vercel deployments, EAS builds, environment management  
+<strong>Inputs:</strong> QA-passed code, deployment target (staging vs. production), environment config  
+<strong>Outputs:</strong> Deployment confirmation with URL, build logs, rollback instructions if needed  
+<strong>Tools:</strong> Git CLI, Vercel CLI, EAS CLI, SSH to Mac mini  
+<strong>Key rule:</strong> Only deploys after receiving QA PASS. Staging before production, always.
+<p><strong>Prompt anchor:</strong> > "You are a DevOps engineer for TopDog AI. You handle git commits, Vercel deployments, and EAS builds. You deploy to staging first, verify the deployment succeeded, then promote to production only on explicit instruction. You maintain a deployment log with timestamps, git SHAs, and deployment URLs."</p>
+<hr>
+<h4>🔍 Research Agent</h4>
+<strong>Domain:</strong> Market research, competitive intelligence, technology evaluation  
+<strong>Inputs:</strong> Research question from Orchestrator  
+<strong>Outputs:</strong> Structured research brief with sources, key findings, and recommendations  
+<strong>Tools:</strong> Web search, web fetch, file write  
+<strong>Key rule:</strong> All claims must include a source. No assertions without citations.
+<p><strong>Prompt anchor:</strong> > "You are a market researcher and technology analyst. Given a research question, search the web, synthesize findings, and return a structured brief with: executive summary, key findings (each with source), competitive landscape if relevant, and a concrete recommendation. Flag uncertainty explicitly."</p>
+<hr>
+<h3>3.3 Tier 3 — Support Agents</h3>
+<h4>🧠 Memory Agent</h4>
+<strong>Purpose:</strong> Solve the session timeout problem permanently.  
+<strong>Mechanism:</strong> After every significant task, the Orchestrator triggers the Memory Agent to update persistent project context files:
+<ul><li></code>memory/projects/{project-name}/CONTEXT.md<code> — current state, open decisions, architectural choices</li>
+<li></code>memory/projects/{project-name}/DECISIONS.md<code> — log of every significant technical decision with rationale</li>
+<li></code>memory/projects/{project-name}/OPEN_ITEMS.md<code> — known gaps, TODOs, next steps</li>
+</ul>
+<strong>Key behavior:</strong> Every new agent session reads the Memory Agent's last checkpoint before starting work. Cold starts become warm starts.
+<hr>
+<h4>📝 Docs Agent</h4>
+<strong>Purpose:</strong> Keep documentation current without making it Jeff's problem.  
+<strong>Outputs:</strong> Updated </code>README.md<code>, </code>CHANGELOG.md<code>, inline code comments, API documentation  
+<strong>Trigger:</strong> Runs automatically after every QA-passed, deployed feature  
+<strong>Key rule:</strong> Documentation is part of the definition of done. A feature is not shipped until the Docs Agent has updated the relevant READMEs.
+<hr>
+<h2>4. Communication & Handoff Protocols</h2>
+<h3>4.1 The Task Brief Format</h3>
+<p>Every task delegated from the Orchestrator to a specialist uses this structured format:</p>
+<p></code>`<code>markdown <h2>Task Brief</h2></p>
+<p><strong>Task ID:</strong> TOPDOG-{project}-{number} <strong>Assigned To:</strong> [Agent Name] <strong>Priority:</strong> [High/Medium/Low] <strong>Depends On:</strong> [Task IDs that must complete first]</p>
+<h3>Context</h3>
+[2-3 sentences of why this task exists]
+<h3>Inputs</h3>
+[Exact file paths, API contracts, schemas the agent needs]
+<h3>Expected Output</h3>
+[Specific files to create/modify, with paths]
+<h3>Acceptance Criteria</h3>
+<ul><li>[ ] Criterion 1</li>
+<li>[ ] Criterion 2</li>
+<li>[ ] (QA agent will verify these)</li>
+</ul>
+<h3>Constraints</h3>
+[Tech stack constraints, security requirements, conventions to follow]
+</code>`<code>
+<h3>4.2 The Handoff Document Format</h3>
+<p>When a specialist agent completes work, it produces a handoff document before returning to the Orchestrator:</p>
+<p></code>`<code>markdown <h2>Handoff: [Task ID]</h2></p>
+<p><strong>Status:</strong> COMPLETE / PARTIAL / BLOCKED <strong>Agent:</strong> [Agent Name] <strong>Files Modified:</strong> <ul><li>path/to/file1.ts (created)</li> <li>path/to/file2.ts (modified - lines 45-78)</li> </ul> <strong>What Was Built:</strong> [Plain-language summary]</p>
+<p><strong>Known Issues / TODOs:</strong> [Anything incomplete, with specific details]</p>
+<p><strong>Dependencies Introduced:</strong> [New packages, environment variables, or services required]</p>
+<p><strong>Notes for QA:</strong> [Anything the QA agent should specifically verify] </code>`<code></p>
+<h3>4.3 Escalation Protocol</h3>
+<p>The Orchestrator escalates to Jeff only in these scenarios: <li><strong>Business logic unknown</strong> — "Should free tier users have access to X?" (no technical answer exists)</li> <li><strong>External blocker</strong> — third-party API is down, credentials don't work</li> <li><strong>Conflicting requirements</strong> — two prior decisions contradict each other</li> <li><strong>Budget/vendor decision</strong> — choosing between paid services</li></p>
+<p>For all other issues — failed tests, type errors, missing implementations, unclear specs — the Orchestrator routes back internally.</p>
+<hr>
+<h2>5. Quality Gates</h2>
+<p>The QA agent is the non-negotiable checkpoint in the system. Here is the full gate logic:</p>
+<p></code>`<code> Code Output → QA Agent     │     ├─ PASS → Orchestrator marks task complete → DevOps deploys (if deploy task)     │     └─ FAIL → QA report sent back to responsible agent                 │                 ├─ Attempt 1: Agent self-corrects, resubmits                 ├─ Attempt 2: Orchestrator provides additional context, agent retries                 └─ Attempt 3: Orchestrator escalates to Jeff with full context </code>`<code></p>
+<p><strong>Maximum 3 retry cycles per task.</strong> After 3 failures, the Orchestrator surfaces the issue to Jeff with a full failure report, proposed solution options, and a recommendation. Jeff makes the call.</p>
+<hr>
+<h2>6. Implementation Roadmap</h2>
+<h3>Phase 1 — Now (March 2026): What We Can Do Today</h3>
+<p><strong>Goal:</strong> Establish the protocols and discipline within OpenClaw's current capabilities.</p>
+<ul><li>✅ Adopt the Task Brief and Handoff Document formats for all development work</li>
+<li>✅ Run the QA Checklist manually before every deployment (OpenClaw executes </code>tsc --noEmit<code>, </code>npm run lint<code>, </code>npm run build<code>)</li>
+<li>✅ Start the Memory Agent pattern: after every session, OpenClaw writes </code>CONTEXT.md<code> and </code>OPEN_ITEMS.md<code> updates</li>
+<li>✅ Use OpenClaw subagents for parallel specialist tasks (Frontend + Backend simultaneously)</li>
+<li>✅ Require Docs Agent step (OpenClaw updates README) before marking any feature complete</li>
+<li><strong>Constraint:</strong> Subagents share the same session depth; no persistent background processes yet</li>
+</ul>
+<strong>Expected improvement:</strong> 60% reduction in deployment failures; Jeff stops manually catching build errors.
+<hr>
+<h3>Phase 2 — April 2026: Mac Mini + SSH Unlocks</h3>
+<p><strong>Goal:</strong> Persistent agent processes, longer autonomous runs, local build execution.</p>
+<p>With SSH access to a Mac mini (always-on, local hardware):</p>
+<ul><li>🔓 <strong>Persistent DevOps agent</strong> runs as a background process, monitoring git, executing builds, reporting status</li>
+<li>🔓 <strong>EAS builds run locally</strong> on the Mac mini — faster, not subject to Expo's cloud queue</li>
+<li>🔓 <strong>Full </code>next build<code> verification</strong> before Vercel deploy (Mac mini runs the build, catches errors before they hit production)</li>
+<li>🔓 <strong>Longer agent tasks</strong> — Mac mini can run multi-hour agent sessions without cloud timeout concerns</li>
+<li>🔓 <strong>Local test runner</strong> — Vitest/Jest suite runs on every commit via a git hook managed by the DevOps agent</li>
+<li>🔓 <strong>Supabase local development</strong> — Mac mini runs Supabase locally for dev, removing dependency on production DB during development</li>
+</ul>
+<strong>Expected improvement:</strong> Near-zero deployment failures; EAS build times cut by 50%; Jeff's deployment involvement drops to final approval only.
+<hr>
+<h3>Phase 3 — September 2026: Full Autonomy</h3>
+<p><strong>Goal:</strong> Jeff describes outcomes; the system ships them.</p>
+<ul><li>🚀 <strong>Autonomous sprint planning</strong> — Orchestrator breaks epics into sprints, manages backlog</li>
+<li>🚀 <strong>Self-healing deployments</strong> — DevOps agent detects production errors (via Sentry/logs), automatically opens a fix task</li>
+<li>🚀 <strong>Continuous QA</strong> — background process monitors production metrics, triggers regression analysis on anomalies</li>
+<li>🚀 <strong>Research agent on a schedule</strong> — weekly competitive intelligence brief delivered without prompting</li>
+<li>🚀 <strong>Multi-project orchestration</strong> — Orchestrator manages tasks across multiple TopDog AI products simultaneously, context-switching with full memory continuity</li>
+<li>🚀 <strong>Jeff's interface</strong> — Telegram/OpenClaw: "Ship the subscription billing feature to DogTracker by Friday." Done.</li>
+</ul>
+<hr>
+<h2>7. Tools & Infrastructure</h2>
+<table>
+<tr><td>Layer</td><td>Tool</td><td>Role</td></tr>
+<tr><td><strong>Orchestration</strong></td><td>OpenClaw (Claude Sonnet 4.5)</td><td>Central orchestrator, Jeff's interface</td></tr>
+<tr><td><strong>Subagents</strong></td><td>OpenClaw subagent API</td><td>Specialist agent execution</td></tr>
+<tr><td><strong>Persistent compute</strong></td><td>Mac mini (SSH)</td><td>Long-running processes, local builds</td></tr>
+<tr><td><strong>Web deployment</strong></td><td>Vercel</td><td>Next.js hosting, preview deployments</td></tr>
+<tr><td><strong>Mobile builds</strong></td><td>EAS (Expo)</td><td>iOS/Android build pipeline</td></tr>
+<tr><td><strong>Database</strong></td><td>Supabase</td><td>PostgreSQL + RLS + Auth + Storage</td></tr>
+<tr><td><strong>Version control</strong></td><td>GitHub</td><td>Source of truth, PR-based review</td></tr>
+<tr><td><strong>Error tracking</strong></td><td>Sentry</td><td>Production monitoring, alert source</td></tr>
+<tr><td><strong>Memory storage</strong></td><td></code>/home/node/workspace/memory/<code></td><td>Project context files</td></tr>
+<tr><td><strong>CI gate</strong></td><td>Mac mini local runner</td><td>Pre-deploy build + test execution</td></tr>
+</table>
+<h3>Infrastructure Principles</h3>
+<li><strong>Stateless agents, stateful files.</strong> Agents are ephemeral; the workspace files are permanent. Every agent reads from and writes to files, not its own memory.</li>
+<li><strong>Staging is mandatory.</strong> Every deploy hits staging first. Production promotion requires explicit sign-off (initially Jeff, eventually the QA agent).</li>
+<li><strong>Secrets never in context.</strong> Environment variables live in </code>.env<code> files and Vercel/EAS secret stores — never in agent prompts or handoff documents.</li>
+<li><strong>Everything is auditable.</strong> Every task brief, handoff document, and QA report is written to disk. Jeff can audit the full chain of custody for any piece of code.</li>
+<hr>
+<h2>8. Success Metrics</h2>
+<p>The following metrics define whether the system is working. Review monthly.</p>
+<table>
+<tr><td>Metric</td><td>Current (Baseline)</td><td>30-Day Target</td><td>90-Day Target</td></tr>
+<tr><td>Deployment failure rate</td><td>~40%</td><td><15%</td><td><5%</td></tr>
+<tr><td>Jeff-hours/week on dev ops</td><td>~10h</td><td><4h</td><td><1h</td></tr>
+<tr><td>Features shipped/week</td><td>1-2</td><td>3-4</td><td>5-8</td></tr>
+<tr><td>Build errors caught pre-deploy</td><td>~20%</td><td>>80%</td><td>>98%</td></tr>
+<tr><td>Session context loss incidents</td><td>Weekly</td><td>Rare</td><td>Never</td></tr>
+<tr><td>Time from Jeff request → staging</td><td>Hours-days</td><td><4 hours</td><td><2 hours</td></tr>
+<tr><td>Test coverage (new code)</td><td>~0%</td><td>>40%</td><td>>70%</td></tr>
+</table>
+<hr>
+<h2>Appendix A: Agent Prompt Templates</h2>
+<h3>Orchestrator System Prompt</h3>
+</code>`<code>
+You are the lead engineering manager for TopDog AI. Jeff Dankey is your only stakeholder.
+<p>Your job: <li>Receive feature requirements from Jeff</li> <li>Read the current project CONTEXT.md before every task</li> <li>Clarify any ambiguities with Jeff BEFORE starting work</li> <li>Decompose requirements into Task Briefs for specialist agents</li> <li>Coordinate agent execution (parallel where possible, sequential where dependent)</li> <li>Validate handoff documents before accepting completion</li> <li>Gate on QA PASS before any deployment</li> <li>Update CONTEXT.md and OPEN_ITEMS.md after every task</li> <li>Escalate to Jeff only for business decisions, not technical ones</li></p>
+<p>You do not write production code. You direct those who do. You protect Jeff's time. Nothing reaches Jeff that isn't finished and tested. </code>`<code></p>
+<h3>QA Agent System Prompt</h3>
+</code>`<code>
+You are the QA engineer and deployment gatekeeper for TopDog AI.
+<p>For every task submitted to you: <li>Read all modified files</li> <li>Run: tsc --noEmit (must exit 0)</li> <li>Run: npm run lint (must exit 0, zero errors)</li> <li>Run: npm run build (must exit 0)</li> <li>Verify all env vars referenced exist in .env.example</li> <li>Verify API routes match the Architect's contract</li> <li>Check for hardcoded secrets (fail immediately if found)</li> <li>Run test suite if tests exist</li></p>
+<p>Return a structured report: <ul><li>Status: PASS or FAIL</li> <li>For each failure: file path, line number, issue description, suggested fix</li> <li>For PASS: confirmation checklist with green checkmarks</li> </ul> You are a hard gate. A PASS from you means the code is deployment-ready. A FAIL means it goes back — not to Jeff, back to the agent that wrote it. </code>`<code></p>
+<hr>
+<h2>Appendix B: QA Pre-Deploy Checklist</h2>
+<p></code>`<code>markdown <h2>QA Pre-Deploy Checklist</h2></p>
+<p><strong>Project:</strong> _______________   <strong>Task ID:</strong> _______________   <strong>Date:</strong> _______________   <strong>QA Agent Run:</strong> _______________</p>
+<h3>Code Quality</h3>
+<ul><li>[ ] </code>tsc --noEmit<code> exits 0 (zero TypeScript errors)</li>
+<li>[ ] </code>npm run lint<code> exits 0 (zero ESLint errors)</li>
+<li>[ ] </code>npm run build<code> exits 0 (production build succeeds)</li>
+<li>[ ] No </code>console.log<code> in production code paths</li>
+<li>[ ] No commented-out code blocks (TODO comments are OK with ticket refs)</li>
+</ul>
+<h3>Security</h3>
+<ul><li>[ ] No hardcoded API keys, tokens, or passwords</li>
+<li>[ ] All secrets referenced via environment variables</li>
+<li>[ ] Supabase RLS policies verified for new tables</li>
+<li>[ ] Auth checks present on all protected routes</li>
+</ul>
+<h3>Contracts & Integration</h3>
+<ul><li>[ ] API routes match Architect's contract (method + path + shapes)</li>
+<li>[ ] All referenced environment variables present in </code>.env.example<code></li>
+<li>[ ] New dependencies listed in package.json</li>
+<li>[ ] Database migrations included for schema changes</li>
+</ul>
+<h3>Testing</h3>
+<ul><li>[ ] Unit tests pass for business logic functions</li>
+<li>[ ] No test files skipped without documented reason</li>
+<li>[ ] Edge cases (empty state, error state, loading state) handled in UI</li>
+</ul>
+<h3>Mobile (if applicable)</h3>
+<ul><li>[ ] EAS build completes without error</li>
+<li>[ ] No iOS/Android-specific APIs used without platform guards</li>
+<li>[ ] App.json / eas.json correctly configured</li>
+</ul>
+<h3>Final</h3>
+<ul><li>[ ] Staging deployment verified before production promotion</li>
+<li>[ ] Deployment URL confirmed accessible</li>
+<li>[ ] No performance regressions (core page load < 3s)</li>
+</ul>
+<strong>QA Result:</strong> ☐ PASS  ☐ FAIL  
+<strong>Issues Found:</strong> _______________  
+<strong>Sign-off:</strong> QA Agent — {timestamp}
+</code>`<code>
+<hr>
+<h2>Appendix C: Memory Agent Update Protocol</h2>
+<p>After every completed task, the Orchestrator instructs the Memory Agent to:</p>
+<li><strong>Read</strong> </code>memory/projects/{project}/CONTEXT.md<code></li>
+<li><strong>Update</strong> with:</li>
+   - Features completed (with Task IDs)
+   - New architectural decisions made
+   - New dependencies added
+   - Open items resolved
+<li><strong>Append</strong> to </code>memory/projects/{project}/DECISIONS.md<code>:</li>
+   - The decision made
+   - The rationale
+   - The alternatives considered
+<li><strong>Update</strong> </code>memory/projects/{project}/OPEN_ITEMS.md<code>:</li>
+   - Remove resolved items
+   - Add new discovered items
+   - Flag anything blocking deployment
+<p>This creates a persistent, session-independent knowledge base. Any new agent session reads these files first and is immediately productive.</p>
+<hr>
+<h2>Appendix D: Recommended File Structure</h2>
+<p></code>`<code> /home/node/workspace/ ├── AGENTS.md                    # System-level agent instructions ├── SOUL.md                      # Orchestrator persona ├── USER.md                      # Jeff's context ├── MEMORY.md                    # Long-term memory ├── TEAM_STRUCTURE.md            # This document ├── memory/ │   ├── YYYY-MM-DD.md            # Daily session logs │   └── projects/ │       ├── dogtracker/ │       │   ├── CONTEXT.md       # Current state │       │   ├── DECISIONS.md     # Decision log │       │   └── OPEN_ITEMS.md   # Active TODOs │       └── {other-products}/ └── tasks/     ├── active/                  # In-progress task briefs     ├── complete/                # Completed task archives     └── templates/               # Task brief templates </code>``</p>
+<hr>
+<p><em>This document is a living strategy. Review and update quarterly as capabilities evolve.</em></p>
+<p><strong>Version 1.0 — March 2026</strong>   <strong>Authors:</strong> OpenClaw (Orchestrator), on behalf of TopDog AI</p>
+</body>
+</html>
