@@ -1,9 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = createServerClient()
+    const { searchParams } = new URL(request.url)
+    const signId = searchParams.get('id')
+    const sign = searchParams.get('sign')
+
+    // Signed URL mode: ?id=X&sign=1
+    if (signId && sign === '1') {
+      const { data: doc, error: fetchErr } = await supabase
+        .from('documents')
+        .select('storage_path, name')
+        .eq('id', signId)
+        .single()
+      if (fetchErr || !doc) {
+        return NextResponse.json({ error: 'Document not found' }, { status: 404 })
+      }
+      const { data: urlData, error: urlErr } = await supabase.storage
+        .from('case-documents')
+        .createSignedUrl(doc.storage_path, 3600)
+      if (urlErr) throw urlErr
+      return NextResponse.json({ url: urlData.signedUrl, name: doc.name })
+    }
+
     const { data, error } = await supabase
       .from('documents')
       .select('*')

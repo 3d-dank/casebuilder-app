@@ -43,18 +43,22 @@ function useAutoSave(formId: FormId, data: FormData, enabled: boolean) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [saving, setSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
+  const [saveError, setSaveError] = useState(false)
 
   const save = useCallback(async (d: FormData) => {
     setSaving(true)
+    setSaveError(false)
     try {
-      await fetch(`/api/forms/${formId}`, {
+      const res = await fetch(`/api/forms/${formId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(d),
       })
+      if (!res.ok) throw new Error('Save failed')
       setLastSaved(new Date())
     } catch {
       console.error('Auto-save failed')
+      setSaveError(true)
     } finally {
       setSaving(false)
     }
@@ -67,7 +71,7 @@ function useAutoSave(formId: FormId, data: FormData, enabled: boolean) {
     return () => { if (timerRef.current) clearTimeout(timerRef.current) }
   }, [data, enabled, save])
 
-  return { saving, lastSaved }
+  return { saving, lastSaved, saveError }
 }
 
 function SSA3368Form({ data, onChange }: { data: FormData; onChange: (d: FormData) => void }) {
@@ -487,7 +491,7 @@ export default function FormsPage() {
   const [loadingForm, setLoadingForm] = useState(false)
   const [completedForms, setCompletedForms] = useState<Set<FormId>>(new Set())
 
-  const { saving, lastSaved } = useAutoSave(activeForm || 'ssa-3368', formData, !!activeForm)
+  const { saving, lastSaved, saveError } = useAutoSave(activeForm || 'ssa-3368', formData, !!activeForm)
 
   useEffect(() => {
     // Load which forms have been saved
@@ -561,8 +565,8 @@ export default function FormsPage() {
             </h1>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs" style={{ color: '#9aa5b1' }}>
-              {saving ? '💾 Saving…' : lastSaved ? `✓ Saved ${lastSaved.toLocaleTimeString()}` : 'Auto-saves as you type'}
+            <span className="text-xs" style={{ color: saveError ? '#ef4444' : '#9aa5b1', fontWeight: saveError ? 600 : 400 }}>
+              {saving ? '💾 Saving…' : saveError ? '⚠️ Save failed — please copy your text' : lastSaved ? `✓ Saved ${lastSaved.toLocaleTimeString()}` : 'Auto-saves as you type'}
             </span>
             <button
               onClick={exportAsText}
@@ -580,6 +584,12 @@ export default function FormsPage() {
             </button>
           </div>
         </div>
+
+        {saveError && (
+          <div className="rounded-xl px-4 py-3 text-sm font-medium" style={{ background: '#fef2f2', color: '#b91c1c', border: '1px solid #fca5a5' }}>
+            ⚠️ Save failed — please copy your text before leaving this page. Check your connection and try again.
+          </div>
+        )}
 
         {loadingForm ? (
           <div className="animate-pulse rounded-2xl p-8" style={{ background: '#e8edf2' }} />

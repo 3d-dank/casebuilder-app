@@ -100,6 +100,22 @@ export default function DocumentsPage() {
     }
   }
 
+  async function handleDownload(id: string, name: string) {
+    try {
+      const res = await fetch(`/api/documents?id=${id}&sign=1`)
+      if (!res.ok) { alert('Could not generate download link'); return }
+      const { url } = await res.json()
+      const a = document.createElement('a')
+      a.href = url
+      a.target = '_blank'
+      a.rel = 'noopener noreferrer'
+      a.download = name
+      a.click()
+    } catch {
+      alert('Failed to download document. Please try again.')
+    }
+  }
+
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Delete "${name}"? This cannot be undone.`)) return
     try {
@@ -237,13 +253,24 @@ export default function DocumentsPage() {
                   <div className="text-sm mt-1" style={{ color: '#6b7a8d' }}>{doc.description}</div>
                 )}
               </div>
-              <button
-                onClick={() => handleDelete(doc.id, doc.name)}
-                className="text-xs px-3 py-1.5 rounded-lg flex-shrink-0"
-                style={{ color: '#ef4444', background: '#fef2f2' }}
-              >
-                Delete
-              </button>
+              <div className="flex gap-2 flex-shrink-0">
+                <button
+                  onClick={() => handleDownload(doc.id, doc.name)}
+                  className="text-xs px-3 py-1.5 rounded-lg font-medium"
+                  style={{ color: '#1d4ed8', background: '#eff6ff' }}
+                  title="Download document"
+                >
+                  ⬇️ Download
+                </button>
+                <button
+                  onClick={() => handleDelete(doc.id, doc.name)}
+                  className="text-xs px-3 py-1.5 rounded-lg font-medium"
+                  style={{ color: '#ef4444', background: '#fef2f2' }}
+                  title="Delete document"
+                >
+                  🗑️ Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>

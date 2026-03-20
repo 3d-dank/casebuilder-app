@@ -145,25 +145,30 @@ export default function ChatWidget() {
           </div>
 
           {/* Input */}
-          <div className="px-3 py-3 border-t border-slate-200 bg-white flex gap-2">
-            <input
-              type="text"
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
-              placeholder="Ask anything about your case..."
-              disabled={loading}
-              className="flex-1 rounded-xl px-3 py-2 text-sm border border-slate-200 outline-none focus:border-teal-500 bg-slate-50"
-              style={{ fontSize: '15px' }}
-            />
-            <button
-              onClick={send}
-              disabled={loading || !input.trim()}
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-white transition-opacity disabled:opacity-40"
-              style={{ background: '#0D9488', minWidth: '36px' }}
-            >
-              ↑
-            </button>
+          <div className="border-t border-slate-200 bg-white">
+            <div className="px-3 py-3 flex gap-2">
+              <input
+                type="text"
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
+                placeholder="Ask anything about your case..."
+                disabled={loading}
+                className="flex-1 rounded-xl px-3 py-2 text-sm border border-slate-200 outline-none focus:border-teal-500 bg-slate-50"
+                style={{ fontSize: '15px' }}
+              />
+              <button
+                onClick={send}
+                disabled={loading || !input.trim()}
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-white transition-opacity disabled:opacity-40"
+                style={{ background: '#0D9488', minWidth: '36px' }}
+              >
+                ↑
+              </button>
+            </div>
+            <div className="px-3 pb-2.5 text-center" style={{ color: '#9aa5b1', fontSize: '10px', lineHeight: '1.4' }}>
+              ⚠️ This assistant provides general information only — not legal or medical advice. Consult a disability attorney for case-specific guidance.
+            </div>
           </div>
         </div>
       )}

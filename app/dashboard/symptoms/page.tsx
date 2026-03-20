@@ -83,7 +83,10 @@ export default function SymptomsPage() {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [saveSuccess, setSaveSuccess] = useState(false)
   const [filter, setFilter] = useState<string>('all')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState(emptyForm)
 
   async function loadLogs() {
     try {
@@ -104,6 +107,7 @@ export default function SymptomsPage() {
     if (!form.symptom) { setError('Please select or enter a symptom'); return }
     setSaving(true)
     setError('')
+    setSaveSuccess(false)
     try {
       const res = await fetch('/api/symptoms', {
         method: 'POST',
@@ -112,14 +116,51 @@ export default function SymptomsPage() {
       })
       if (!res.ok) {
         const d = await res.json()
-        setError(d.error || 'Failed to save')
+        setError(d.error || 'Save failed — please try again')
         return
       }
       setForm({ ...emptyForm, log_date: new Date().toISOString().split('T')[0] })
       setShowForm(false)
+      setSaveSuccess(true)
+      setTimeout(() => setSaveSuccess(false), 3000)
       await loadLogs()
     } catch {
-      setError('Something went wrong. Please try again.')
+      setError('Save failed — please try again')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  function startEdit(log: SymptomLog) {
+    setEditingId(log.id)
+    setEditForm({
+      log_date: log.log_date,
+      category: log.category,
+      symptom: log.symptom,
+      severity: log.severity,
+      description: log.description || '',
+    })
+  }
+
+  async function handleEditSave(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editForm.symptom || !editingId) return
+    setSaving(true)
+    try {
+      const res = await fetch('/api/symptoms', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editingId, ...editForm, severity: Number(editForm.severity) }),
+      })
+      if (!res.ok) {
+        const d = await res.json()
+        alert(d.error || 'Save failed — please try again')
+        return
+      }
+      setEditingId(null)
+      await loadLogs()
+    } catch {
+      alert('Save failed — please try again')
     } finally {
       setSaving(false)
     }
@@ -129,6 +170,23 @@ export default function SymptomsPage() {
     if (!confirm('Delete this symptom entry?')) return
     await fetch(`/api/symptoms?id=${id}`, { method: 'DELETE' })
     setLogs((prev) => prev.filter((l) => l.id !== id))
+  }
+
+  function exportCSV() {
+    const header = 'Date,Category,Symptom,Severity,Description'
+    const rows = logs.map((l) => {
+      const desc = (l.description || '').replace(/"/g, '""')
+      const symptom = (l.symptom || '').replace(/"/g, '""')
+      return `${l.log_date},${l.category},"${symptom}",${l.severity},"${desc}"`
+    })
+    const csv = [header, ...rows].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `symptom-log-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   const filteredLogs = filter === 'all' ? logs : logs.filter((l) => l.category === filter)
@@ -156,14 +214,32 @@ export default function SymptomsPage() {
             Track your daily limitations. This builds powerful evidence for your case.
           </p>
         </div>
-        <button
-          onClick={() => { setShowForm(true); setError('') }}
-          className="px-4 py-2 rounded-xl text-white font-semibold text-sm"
-          style={{ background: '#0D9488' }}
-        >
-          + Log Symptom
-        </button>
+        <div className="flex gap-2 flex-wrap">
+          {logs.length > 0 && (
+            <button
+              onClick={exportCSV}
+              className="px-4 py-2 rounded-xl font-semibold text-sm"
+              style={{ background: '#eff6ff', color: '#1d4ed8' }}
+            >
+              📋 Export for Doctor / SSA
+            </button>
+          )}
+          <button
+            onClick={() => { setShowForm(true); setError('') }}
+            className="px-4 py-2 rounded-xl text-white font-semibold text-sm"
+            style={{ background: '#0D9488' }}
+          >
+            + Log Symptom
+          </button>
+        </div>
       </div>
+
+      {/* Success banner */}
+      {saveSuccess && (
+        <div className="rounded-xl px-4 py-3 text-sm font-medium" style={{ background: '#d1fae5', color: '#065f46' }}>
+          ✓ Symptom saved successfully
+        </div>
+      )}
 
       {/* Stats row */}
       {logs.length > 0 && (
@@ -353,6 +429,109 @@ export default function SymptomsPage() {
               <div className="space-y-2">
                 {grouped[date].map((log) => {
                   const cat = CATEGORIES.find((c) => c.value === log.category)
+                  const isEditing = editingId === log.id
+
+                  if (isEditing) {
+                    return (
+                      <div key={log.id} className="bg-white rounded-xl border-2 p-4" style={{ borderColor: '#0D9488' }}>
+                        <form onSubmit={handleEditSave} className="space-y-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div>
+                              <label className="block text-xs font-medium mb-1" style={{ color: '#374151' }}>Date</label>
+                              <input
+                                type="date"
+                                required
+                                className="w-full px-3 py-2 rounded-xl border text-sm focus:outline-none"
+                                style={{ borderColor: '#d1d9e0' }}
+                                value={editForm.log_date}
+                                onChange={(e) => setEditForm({ ...editForm, log_date: e.target.value })}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium mb-1" style={{ color: '#374151' }}>Category</label>
+                              <select
+                                className="w-full px-3 py-2 rounded-xl border text-sm focus:outline-none"
+                                style={{ borderColor: '#d1d9e0' }}
+                                value={editForm.category}
+                                onChange={(e) => setEditForm({ ...editForm, category: e.target.value, symptom: '' })}
+                              >
+                                {CATEGORIES.map((c) => (
+                                  <option key={c.value} value={c.value}>{c.label}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium mb-1" style={{ color: '#374151' }}>
+                                Severity: <strong style={{ color: severityColor(editForm.severity) }}>{editForm.severity}/10</strong>
+                              </label>
+                              <input
+                                type="range"
+                                min={1}
+                                max={10}
+                                className="w-full"
+                                value={editForm.severity}
+                                onChange={(e) => setEditForm({ ...editForm, severity: Number(e.target.value) })}
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium mb-1" style={{ color: '#374151' }}>Symptom</label>
+                            <div className="flex flex-wrap gap-1.5 mb-2">
+                              {getSymptomsForCategory(editForm.category).map((s) => (
+                                <button
+                                  key={s}
+                                  type="button"
+                                  onClick={() => setEditForm({ ...editForm, symptom: s })}
+                                  className="text-xs px-2.5 py-1 rounded-full border font-medium"
+                                  style={editForm.symptom === s
+                                    ? { background: '#1E3A5F', color: '#fff', borderColor: '#1E3A5F' }
+                                    : { background: '#fff', color: '#374151', borderColor: '#d1d9e0' }}
+                                >
+                                  {s}
+                                </button>
+                              ))}
+                            </div>
+                            <input
+                              className="w-full px-3 py-2 rounded-xl border text-sm focus:outline-none"
+                              style={{ borderColor: '#d1d9e0' }}
+                              value={editForm.symptom}
+                              onChange={(e) => setEditForm({ ...editForm, symptom: e.target.value })}
+                              placeholder="Or type a symptom..."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium mb-1" style={{ color: '#374151' }}>Description</label>
+                            <textarea
+                              rows={2}
+                              className="w-full px-3 py-2 rounded-xl border text-sm focus:outline-none resize-y"
+                              style={{ borderColor: '#d1d9e0' }}
+                              value={editForm.description}
+                              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              type="submit"
+                              disabled={saving}
+                              className="px-4 py-2 rounded-xl text-white text-sm font-semibold disabled:opacity-60"
+                              style={{ background: '#1E3A5F' }}
+                            >
+                              {saving ? 'Saving…' : 'Save Changes'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingId(null)}
+                              className="px-4 py-2 rounded-xl text-sm font-medium"
+                              style={{ background: '#f0f4f8', color: '#374151' }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    )
+                  }
+
                   return (
                     <div key={log.id} className="bg-white rounded-xl border p-4 flex gap-3" style={{ borderColor: '#e8edf2' }}>
                       <div
@@ -378,13 +557,24 @@ export default function SymptomsPage() {
                           <p className="text-sm mt-1" style={{ color: '#6b7a8d' }}>{log.description}</p>
                         )}
                       </div>
-                      <button
-                        onClick={() => handleDelete(log.id)}
-                        className="text-xs px-2 py-1 rounded flex-shrink-0 self-start"
-                        style={{ color: '#ef4444', background: '#fef2f2' }}
-                      >
-                        ×
-                      </button>
+                      <div className="flex gap-1 flex-shrink-0 self-start">
+                        <button
+                          onClick={() => startEdit(log)}
+                          className="text-xs px-2 py-1 rounded font-medium"
+                          style={{ color: '#1d4ed8', background: '#eff6ff' }}
+                          title="Edit entry"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => handleDelete(log.id)}
+                          className="text-xs px-2 py-1 rounded"
+                          style={{ color: '#ef4444', background: '#fef2f2' }}
+                          title="Delete entry"
+                        >
+                          ×
+                        </button>
+                      </div>
                     </div>
                   )
                 })}

@@ -41,6 +41,34 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PUT(request: NextRequest) {
+  try {
+    const supabase = createServerClient()
+    const body = await request.json()
+    const { id, log_date, category, symptom, severity, description } = body
+
+    if (!id) {
+      return NextResponse.json({ error: 'ID is required' }, { status: 400 })
+    }
+    if (!log_date || !category || !symptom) {
+      return NextResponse.json({ error: 'Date, category, and symptom are required' }, { status: 400 })
+    }
+
+    const { data, error } = await supabase
+      .from('symptom_logs')
+      .update({ log_date, category, symptom, severity, description })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return NextResponse.json({ symptom: data })
+  } catch (err) {
+    console.error('PUT /api/symptoms:', err)
+    return NextResponse.json({ error: 'Failed to update symptom' }, { status: 500 })
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = createServerClient()
